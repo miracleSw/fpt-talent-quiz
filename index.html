@@ -355,8 +355,8 @@
             
             <!-- Java Memory & JVM Architecture -->
             <div class="knowledge-block">
-                <h3>1. Java Virtual Machine (JVM) Architecture & Garbage Collection</h3>
-                <p>Hiểu sâu sắc cách JVM tổ chức quản lý bộ nhớ RAM vật lý thô và cơ chế thu gom rác tự động bảo vệ hệ thống:</p>
+                <h3>1. Java Virtual Machine (JVM) Architecture & Core Garbage Collection</h3>
+                <p>Hiểu cách JVM tổ chức quản lý bộ nhớ và cơ chế dọn dẹp tài nguyên cơ bản:</p>
                 
                 <h4>Cấu trúc các Phân vùng Bộ nhớ (Runtime Data Areas)</h4>
                 <table class="knowledge-table">
@@ -364,87 +364,87 @@
                         <tr>
                             <th>Phân Vùng Bộ Nhớ</th>
                             <th>Bản Chất Vận Hành Của Trình Điều Khiển</th>
-                            <th>Chi Phí Thuật Toán & Quản Trị Hệ Thống</th>
+                            <th>Khả Năng Xử Lý & Lỗi Phổ Biến</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td><strong>JVM Stack Space</strong></td>
-                            <td>Mỗi luồng (Thread) khi khởi tạo sẽ sở hữu một Stack riêng. Chứa các khung thực thi (Stack Frames) chứa biến cục bộ (primitives), các con trỏ tham chiếu (object references) trỏ sang Heap. Hoạt động theo cơ chế LIFO. Giải phóng tức thì khi thoát hàm.</td>
-                            <td>Truy cập cực kỳ nhanh ($O(1)$) vì CPU trực tiếp điều phối thông qua con trỏ thanh ghi (Stack Pointer). Kích thước nhỏ, cố định. Gọi đệ quy vô hạn hoặc khai báo biến cục bộ vượt ngưỡng gây ra lỗi <code>StackOverflowError</code>.</td>
+                            <td>Mỗi luồng (Thread) có một Stack riêng chứa các khung thực thi (Stack Frames). Chứa biến cục bộ (primitives) và các tham chiếu đối tượng (object references) trỏ sang Heap. Hoạt động theo cơ chế LIFO. Tự giải phóng khi thoát phương thức.</td>
+                            <td>Truy cập rất nhanh ($O(1)$) vì được CPU quản lý trực tiếp. Kích thước nhỏ, cố định. Đệ quy quá sâu không có điểm dừng gây ra lỗi <code>StackOverflowError</code>.</td>
                         </tr>
                         <tr>
                             <td><strong>Heap Space</strong></td>
-                            <td>Phân vùng chia sẻ chung giữa toàn bộ các luồng trong ứng dụng. Chứa tất cả các thực thể đối tượng thô được tạo ra từ từ khóa <code>new</code>. Được chia làm 2 phân vùng lớn: Young Generation (chứa Eden, Survivor S0, S1) và Old Generation (Tenured).</td>
-                            <td>Dung lượng lưu trữ lớn nhưng tốc độ cấp phát chậm hơn Stack vì cần tìm kiếm ô nhớ trống thô. Khi Heap không còn không gian cấp phát cho thực thể mới và GC đã chạy dọn dẹp kiệt sức nhưng thất bại, JVM sẽ ném ra lỗi <code>OutOfMemoryError: Java heap space</code>.</td>
+                            <td>Phân vùng dùng chung cho tất cả các luồng trong ứng dụng. Lưu giữ tất cả các đối tượng được khởi tạo bằng từ khóa <code>new</code>. Được phân bổ thành: Young Generation (chứa Eden, Survivor S0, S1) và Old Generation.</td>
+                            <td>Dung lượng lưu trữ lớn nhưng cấp phát chậm hơn Stack do cần tìm không gian trống. Khi không còn đủ bộ nhớ để cấp phát cho đối tượng mới, JVM sẽ ném ra lỗi <code>OutOfMemoryError: Java heap space</code>.</td>
                         </tr>
                         <tr>
                             <td><strong>Metaspace (Native Memory)</strong></td>
-                            <td>Từ Java 8, Metaspace thay thế hoàn toàn vùng PermGen cũ. Vùng này lưu giữ Class Metadata, hằng số Constant Pool, cấu trúc phương thức tĩnh. Nằm hoàn toàn ở bộ nhớ Native Memory ngoài phạm vi kiểm soát trực tiếp của Heap.</td>
-                            <td>Mặc định tự động mở rộng không giới hạn theo dung lượng RAM vật lý của hệ điều hành, triệt tiêu lỗi sập hệ thống do tràn bộ nhớ PermGen thường gặp ở Java 7 trở về trước. Cấu hình qua flag <code>-XX:MaxMetaspaceSize</code>.</td>
+                            <td>Vùng nhớ thay thế PermGen từ Java 8, lưu trữ Class Metadata, cấu trúc class và constant pool. Nằm hoàn toàn ở bộ nhớ ngoài (Native Memory) của hệ điều hành.</td>
+                            <td>Tự động điều chỉnh kích thước động theo tài nguyên của hệ thống, giúp hạn chế lỗi tràn bộ nhớ PermGen trước đây. Có thể cấu hình giới hạn qua <code>-XX:MaxMetaspaceSize</code>.</td>
                         </tr>
                         <tr>
                             <td><strong>String Table (String Pool)</strong></td>
-                            <td>Vùng nhớ đệm chuyên biệt nằm trong Heap dùng để lưu trữ duy nhất các chuỗi ký tự dạng tường minh (String Literals). Tránh việc cấp phát nhân bản lãng phí RAM khi xử lý văn bản.</td>
-                            <td>Khi khai báo <code>String s = "FPT"</code>, JVM kiểm tra trong Pool, nếu có sẽ trả về tham chiếu có sẵn ($O(1)$). Khai báo <code>String s = new String("FPT")</code> ép buộc JVM bỏ qua Pool và cấp phát một ô nhớ Object mới tinh trên Heap thô.</td>
+                            <td>Một vùng nhớ đệm đặc biệt nằm trong Heap dùng để lưu trữ duy nhất các chuỗi ký tự tường minh (String Literals), giúp tối ưu hóa dung lượng RAM bằng cách tránh tạo trùng lặp các chuỗi giống nhau.</td>
+                            <td>Khai báo <code>String s = \"FPT\"</code> sẽ tái sử dụng lại tham chiếu có sẵn trong Pool ($O(1)$). Khai báo <code>String s = new String(\"FPT\")</code> sẽ tạo một đối tượng hoàn toàn mới trên Heap thô.</td>
                         </tr>
                     </tbody>
                 </table>
 
-                <h4>Cơ Chế Thu Gom Rác (Garbage Collection - GC)</h4>
-                <p>Garbage Collector xác định xem đối tượng nào đủ điều kiện giải phóng RAM bằng thuật toán <strong>Reachability Analysis (Phân tích tính khả đạt)</strong>. GC bắt đầu quét từ các nút gốc gọi là <strong>GC Roots</strong> (như biến cục bộ trên Stack, luồng đang chạy, biến tĩnh). Nếu một đối tượng trên Heap không tồn tại bất kỳ đường dẫn liên kết nào dẫn tới GC Roots, nó được coi là "Unreachable" và bị dọn dẹp.</p>
+                <h4>Cơ Chế Thu Gom Rác Cơ Bản (Garbage Collection - GC)</h4>
+                <p>Garbage Collector xác định xem đối tượng nào đủ điều kiện giải phóng bằng thuật toán <strong>Reachability Analysis (Phân tích tính khả đạt)</strong>. GC bắt đầu duyệt từ các nút gốc gọi là <strong>GC Roots</strong> (biến cục bộ trên Stack, luồng đang chạy, biến tĩnh). Nếu một đối tượng không có đường liên kết nào tới GC Roots, nó sẽ bị dọn dẹp.</p>
                 <div class="highlight-box">
-                    <strong>Quy trình dọn dẹp Generations:</strong> Các đối tượng mới sinh nằm ở vùng <strong>Eden</strong>. Khi Eden đầy, <strong>Minor GC</strong> kích hoạt quét dọn: các đối tượng còn sống sót được chuyển sang vùng <strong>Survivor S0/S1</strong> với tuổi tăng lên 1. Sau nhiều lượt Minor GC, nếu tuổi của đối tượng vượt ngưỡng (mặc định là 15 - cấu trúc Tenuring Threshold), nó sẽ được thăng cấp (promoted) sang vùng <strong>Old Generation</strong>. Khi Old Gen đầy, <strong>Major/Full GC</strong> sẽ được kích hoạt để dọn dẹp triệt để trên toàn bộ Heap, gây ra hiện tượng dừng toàn bộ hệ thống để dọn rác gọi là <strong>Stop-The-World (STW)</strong>.
+                    <strong>Quy trình dọn dẹp các phân vùng:</strong> Các đối tượng mới sinh được cấp phát ở vùng <strong>Eden</strong>. Khi Eden đầy, <strong>Minor GC</strong> sẽ chạy, dọn dẹp và chuyển các đối tượng còn sống sang vùng <strong>Survivor (S0/S1)</strong> với số tuổi tăng thêm 1. Sau nhiều chu kỳ dọn dẹp, nếu đối tượng sống đủ lâu (mặc định đạt 15 tuổi), nó sẽ được chuyển sang vùng <strong>Old Generation</strong>. Khi Old Gen đầy, <strong>Major GC</strong> sẽ kích hoạt để dọn dẹp diện rộng.
                 </div>
             </div>
 
             <!-- OOP Principles & SOLID Architecture -->
             <div class="knowledge-block">
                 <h3>2. OOP Core Principles & SOLID Architectural Patterns</h3>
-                <p>Hệ thống hóa toàn bộ các tính chất cốt lõi của Lập trình Hướng đối tượng và 5 nguyên lý vàng thiết kế phần mềm sạch:</p>
+                <p>Hệ thống hóa toàn bộ các tính chất cốt lõi của Lập trình Hướng đối tượng và 5 nguyên lý thiết kế phần mềm sạch:</p>
                 
                 <h4>4 Tính Chất Kinh Điển Của OOP</h4>
                 <ol>
-                    <li><strong>Đóng gói (Encapsulation):</strong> Che giấu cấu trúc dữ liệu thô bên trong lớp bằng bộ sửa đổi truy cập <code>private</code>. Chỉ cung cấp quyền đọc/ghi có kiểm soát thông qua các hàm <code>public</code> Getter/Setter có chốt chặn logic validation, ngăn chặn việc làm hỏng trạng thái đối tượng từ bên ngoài.</li>
-                    <li><strong>Kế thừa (Inheritance):</strong> Cho phép lớp con thừa hưởng và tái sử dụng các thuộc tính, phương thức của lớp cha (mối quan hệ <em>IS-A</em>) qua từ khóa <code>extends</code> hoặc <code>implements</code>. Giúp loại bỏ sự trùng lặp mã nguồn thô.</li>
-                    <li><strong>Đa hình (Polymorphism):</strong> Một hành động có thể được biểu diễn dưới nhiều hình thái khác nhau. Thực hiện qua 2 cơ chế: <strong>Overloading</strong> (Nạp chồng - xác định lúc Compile-time, cùng tên phương thức nhưng khác chữ ký tham số) và <strong>Overriding</strong> (Ghi đè - xác định lúc Runtime, lớp con viết lại phương thức lớp cha có cùng chữ ký).</li>
-                    <li><strong>Trừu tượng (Abstraction):</strong> Lược bỏ các chi tiết triển khai thuật toán phức tạp bên trong, chỉ phơi bày ra bộ khung giao tiếp tính năng cốt lõi (WHAT to do, not HOW to do). Hiện thực hóa qua lớp trừu tượng <code>abstract class</code> và giao diện <code>interface</code>.</li>
+                    <li><strong>Đóng gói (Encapsulation):</strong> Che giấu chi tiết cài đặt và trạng thái bên trong đối tượng bằng bộ sửa đổi truy cập <code>private</code>. Cung cấp quyền truy cập gián tiếp an toàn qua các hàm Getter/Setter có kiểm tra điều kiện logic.</li>
+                    <li><strong>Kế thừa (Inheritance):</strong> Cho phép lớp con thừa hưởng các thuộc tính và phương thức từ lớp cha (quan hệ <em>IS-A</em>) qua từ khóa <code>extends</code> hoặc <code>implements</code>, giúp tái sử dụng mã nguồn hiệu quả.</li>
+                    <li><strong>Đa hình (Polymorphism):</strong> Cho phép một hành động được thể hiện bằng nhiều cách khác nhau. Thể hiện qua <strong>Overloading</strong> (Nạp chồng - diễn ra lúc compile-time, cùng tên phương thức nhưng khác tham số đầu vào) và <strong>Overriding</strong> (Ghi đè - diễn ra lúc runtime, lớp con viết lại phương thức của lớp cha có cùng chữ ký).</li>
+                    <li><strong>Trừu tượng (Abstraction):</strong> Lược bỏ các chi tiết cài đặt phức tạp, chỉ phơi bày những chức năng cốt lõi (WHAT to do, not HOW to do). Hiện thực hóa qua lớp trừu tượng <code>abstract class</code> và giao diện <code>interface</code>.</li>
                 </ol>
 
-                <h4>5 Nguyên Lý Thiết Kế Hệ Thống SOLID</h4>
+                <h4>5 Nguyên Lý Thiết Kế SOLID nền tảng</h4>
                 <table class="knowledge-table">
                     <thead>
                         <tr>
                             <th>Nguyên Lý (SOLID)</th>
                             <th>Định Nghĩa Chi Tiết & Bản Chất Thiết Kế</th>
-                            <th>Mô Hình Áp Dụng Thực Tế Để Tối Ưu Hệ Thống</th>
+                            <th>Ví Dụ Thực Tế Dành Cho Intern/Fresher</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td><strong>S - Single Responsibility</strong></td>
-                            <td>Mỗi lớp chỉ nên đảm nhận một nhiệm vụ duy nhất và rõ ràng. Một lớp chỉ có duy nhất một lý do để thay đổi cấu trúc code.</td>
-                            <td>Tách biệt hoàn toàn lớp xử lý logic nghiệp vụ xử lý DB (Service/Repository) ra khỏi lớp tiếp nhận điều khiển định tuyến giao diện (Controller).</td>
+                            <td>Mỗi lớp chỉ nên đảm nhận một chức năng duy nhất và rõ ràng. Một lớp chỉ nên có duy nhất một lý do để thay đổi mã nguồn.</td>
+                            <td>Tách biệt hoàn toàn lớp xử lý lưu trữ dữ liệu (Repository) ra khỏi lớp xử lý luồng giao diện người dùng (Controller).</td>
                         </tr>
                         <tr>
                             <td><strong>O - Open/Closed</strong></td>
-                            <td>Mở cho việc mở rộng thêm các tính năng mới, nhưng đóng hoàn toàn với việc sửa đổi trực tiếp vào phần mã nguồn lõi cũ đã hoạt động ổn định.</td>
-                            <td>Sử dụng Interfaces và đa hình Polymorphism. Khi có nghiệp vụ thanh toán mới, ta tạo class mới implements <code>PaymentMethod</code> thay vì viết thêm <code>if-else</code> vào class cũ.</td>
+                            <td>Mở cho việc mở rộng tính năng mới, nhưng đóng với việc chỉnh sửa trực tiếp mã nguồn cũ đang chạy ổn định.</td>
+                            <td>Sử dụng Interface. Khi cần thêm phương thức thanh toán mới, ta tạo class mới implements interface <code>PaymentMethod</code> thay vì sửa chuỗi logic <code>if-else</code> cũ.</td>
                         </tr>
                         <tr>
                             <td><strong>L - Liskov Substitution</strong></td>
-                            <td>Các lớp con bắt buộc phải có khả năng thay thế hoàn toàn vai trò của lớp cha mà không làm thay đổi tính đúng đắn và các hợp đồng gọi hàm hiện có.</td>
-                            <td>Cấm viết lớp con kế thừa lớp cha nhưng lại ném ra ngoại lệ <code>UnsupportedOperationException</code> ở các hàm thừa hưởng từ cha (Ví dụ: Class ChimCánhCụt kế thừa Class Chim nhưng ném lỗi ở hàm <code>bay()</code>).</td>
+                            <td>Lớp con phải có khả năng thay thế hoàn toàn vai trò của lớp cha mà không làm hỏng tính đúng đắn của chương trình.</td>
+                            <td>Không viết lớp con kế thừa lớp cha nhưng lại vô hiệu hóa các phương thức của cha bằng cách ném ngoại lệ <code>UnsupportedOperationException</code>.</td>
                         </tr>
                         <tr>
                             <td><strong>I - Interface Segregation</strong></td>
-                            <td>Thay vì thiết kế một Interface khổng lồ "béo phì", hãy chia nhỏ thành nhiều Interface chuyên biệt siêu nhỏ để tránh ép buộc lớp thực thi phải cài đặt các hàm thừa thãi.</td>
-                            <td>Tách biệt interface <code>Printable</code> và <code>Scannable</code> độc lập, thay vì gộp chung thành một interface máy in đa năng đồ sộ.</td>
+                            <td>Chia nhỏ một Interface lớn chứa quá nhiều phương thức thành nhiều Interface chuyên biệt siêu nhỏ, tránh ép buộc lớp thực thi phải cài đặt những hàm thừa thãi.</td>
+                            <td>Tách biệt interface <code>Printer</code> và <code>Scanner</code> thay vì gộp chung thành một interface máy in đa năng khổng lồ.</td>
                         </tr>
                         <tr>
                             <td><strong>D - Dependency Inversion</strong></td>
-                            <td>Các mô-đun cấp cao không được phụ thuộc trực tiếp vào mô-đun cấp thấp. Cả hai bắt buộc phải giao tiếp thông qua các lớp trừu tượng (Interfaces).</td>
-                            <td>Áp dụng cơ chế Dependency Injection (DI). Class <code>Car</code> nhận đối số là interface <code>Engine</code> trong constructor, thay vì tự ý khởi tạo cứng <code>Engine e = new ToyotaEngine()</code> bên trong lòng nó.</td>
+                            <td>Các mô-đun cấp cao không được phụ thuộc trực tiếp vào các mô-đun cấp thấp. Cả hai phải giao tiếp thông qua các lớp trừu tượng (Interface).</td>
+                            <td>Lớp <code>Car</code> nhận đối số là interface <code>Engine</code> trong constructor (Dependency Injection) thay vì tự khởi tạo trực tiếp <code>Engine e = new ToyotaEngine()</code> bên trong lớp.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -452,63 +452,63 @@
 
             <!-- Concurrency & Multithreading -->
             <div class="knowledge-block">
-                <h3>3. Java Concurrency & Multithreading Master-Class</h3>
-                <p>Nắm giữ các cơ chế tối quan trọng khi thiết kế ứng dụng đa luồng hiệu năng cao:</p>
+                <h3>3. Java Concurrency & Multithreading Core</h3>
+                <p>Nắm giữ các cơ chế cơ bản khi vận hành ứng dụng đa luồng:</p>
                 <ul>
-                    <li><strong>Volatile Keyword:</strong> Đảm bảo tính hiển thị (visibility) xuyên suốt các luồng. Mọi hành động ghi dữ liệu vào biến <code>volatile</code> sẽ đẩy trực tiếp giá trị xuống RAM chính, bỏ qua CPU Cache. Luồng khác đọc biến volatile sẽ luôn nhận được giá trị mới nhất. Lưu ý: Volatile không đảm bảo tính nguyên tử (atomic).</li>
-                    <li><strong>Synchronized Block vs ReentrantLock:</strong> Khối lệnh <code>synchronized</code> là cơ chế khóa ngầm định (implicit lock) dễ sử dụng nhưng cứng nhắc. <code>ReentrantLock</code> là cơ chế khóa tường minh (explicit lock) nâng cao, hỗ trợ thăm dò khóa không chặn <code>tryLock()</code> có cài đặt thời gian chờ, và hỗ trợ thiết lập tính công bằng cho hàng đợi luồng (Fairness Policy).</li>
-                    <li><strong>Cơ chế CAS (Compare-And-Swap):</strong> Nguyên lý nền tảng của lập trình không dùng khóa (Lock-free). Thay vì khóa luồng gây tắc nghẽn, CAS thực hiện kiểm tra: nếu giá trị hiện tại ở ô nhớ khớp với giá trị kỳ vọng ban đầu, nó mới tiến hành cập nhật giá trị mới, ngược lại sẽ thử lại liên tục (spin-wait). Đây là lõi vận hành của các lớp <code>AtomicInteger</code>, <code>AtomicLong</code>.</li>
-                    <li><strong>ThreadPoolExecutor Internals:</strong> Tránh khởi tạo luồng thủ công vì chi phí tạo luồng rất đắt. ThreadPool quản lý qua bộ tham số:
-                        <br>- <code>corePoolSize</code>: Số lượng luồng tối thiểu luôn được giữ sống trong Pool.
-                        <br>- <code>maximumPoolSize</code>: Số lượng luồng tối đa được phép phình ra khi tải quá nặng.
-                        <br>- <code>workQueue</code>: Hàng đợi (như <code>LinkedBlockingQueue</code>) chứa các Task đang chờ luồng rảnh rỗi gắp đi thực thi.
+                    <li><strong>Volatile Keyword:</strong> Đảm bảo tính hiển thị (visibility) xuyên suốt giữa các luồng. Mọi hành động ghi dữ liệu vào biến <code>volatile</code> sẽ đẩy trực tiếp xuống RAM chính, bỏ qua CPU Cache. Luồng khác đọc biến volatile sẽ luôn nhận được giá trị mới nhất. Volatile không đảm bảo tính nguyên tử (atomic).</li>
+                    <li><strong>Synchronized Block:</strong> Cơ chế khóa ngầm định (implicit lock) để đồng bộ hóa một đoạn mã hoặc phương thức. Đảm bảo tại một thời điểm chỉ có duy nhất một luồng có quyền thực thi khối lệnh này, ngăn chặn hiện tượng tranh chấp dữ liệu (Race Condition).</li>
+                    <li><strong>Thread Pool:</strong> Quản lý một tập hợp các luồng có sẵn để tái sử dụng, tránh việc tạo luồng thủ công liên tục gây lãng phí CPU. Quản lý qua các thuộc tính:
+                        <br>- <code>corePoolSize</code>: Số lượng luồng tối thiểu luôn được duy trì sống trong Pool.
+                        <br>- <code>maximumPoolSize</code>: Số lượng luồng tối đa được phép phình ra khi hàng đợi quá tải.
+                        <br>- <code>workQueue</code>: Hàng đợi chứa các Task đang chờ luồng rảnh rỗi gắp đi thực thi.
                     </li>
+                    <li><strong>AtomicInteger:</strong> Cung cấp các thao tác xử lý số nguyên đảm bảo an toàn đa luồng (thread-safe) mà không cần sử dụng khối lệnh synchronized, giúp cải thiện hiệu năng xử lý đáng kể.</li>
                 </ul>
             </div>
 
             <!-- Cross-Language Matrix -->
             <div class="knowledge-block">
                 <h3>4. Modern Programming Languages Architecture Matrix</h3>
-                <p>Tổng hợp bản chất vận hành hạt nhân của 5 ngôn ngữ lập trình hiện đại:</p>
+                <p>Tổng hợp bản chất vận hành hạt nhân của 5 ngôn ngữ lập trình phổ biến ở mức cơ bản:</p>
                 <table class="knowledge-table">
                     <thead>
                         <tr>
                             <th>Ngôn Ngữ</th>
                             <th>Môi Trường Runtime & Quản Lý RAM</th>
                             <th>Cơ Chế Xử Lý Concurrency (Đồng Thời)</th>
-                            <th>Điểm Đặc Thù Sống Còn Cần Nhớ Độc Bản</th>
+                            <th>Tính Chất Cốt Lõi Cần Nhớ</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
                             <td><strong>JavaScript & React</strong></td>
-                            <td>Chạy trên Engine V8. Quản lý dọn dẹp RAM tự động. Đơn luồng xử lý đồng thời qua hàng đợi Event Loop.</td>
-                            <td>Bất đồng bộ phi chặn (Non-blocking I/O) sử dụng Promises, Async/Await chèn callback vào Microtask/Macrotask Queue.</td>
-                            <td><strong>React Fiber & Reconciliation:</strong> React so sánh cây ảo Virtual DOM tìm các nút biến động để vẽ lại tối thiểu vào Real DOM, quản trị state bất biến.</td>
+                            <td>Chạy trên Engine V8. Tự động dọn dẹp RAM. Đơn luồng xử lý đồng thời qua cơ chế Event Loop.</td>
+                            <td>Bất đồng bộ phi chặn (Non-blocking I/O) sử dụng Promises, Async/Await đưa callback vào Microtask/Macrotask Queue.</td>
+                            <td><strong>Virtual DOM:</strong> React so sánh cây ảo Virtual DOM tìm ra các nút biến động để cập nhật tối thiểu vào Real DOM của trình duyệt, giúp UI mượt mà hơn.</td>
                         </tr>
                         <tr>
                             <td><strong>.NET Core (C#)</strong></td>
-                            <td>Chạy trên Common Language Runtime (CLR), biên dịch JIT ra mã máy. GC chia 3 thế hệ (Gen 0, 1, 2) dọn dẹp tối ưu RAM.</td>
-                            <td>Task Parallel Library (TPL) chạy bất đồng bộ qua State Machine biên dịch từ cú pháp <code>async/await</code>.</td>
-                            <td><strong>LOH (Large Object Heap):</strong> Chứa các đối tượng kích thước $\ge 85.000$ bytes, GC bỏ qua khâu dồn nén vùng này để tránh hao tổn tài nguyên CPU di dời RAM.</td>
+                            <td>Chạy trên Common Language Runtime (CLR), biên dịch JIT ra mã máy. Bộ thu gom rác GC tự động quản lý giải phóng RAM.</td>
+                            <td>Sử dụng thư viện lập trình bất đồng bộ chạy qua State Machine nhờ cú pháp <code>async/await</code>.</td>
+                            <td><strong>Cơ chế JIT:</strong> Biên dịch mã trung gian MSIL thành mã máy thô ngay tại thời điểm thực thi để tối ưu tốc độ chạy.</td>
                         </tr>
                         <tr>
                             <td><strong>Python</strong></td>
-                            <td>Trình thông dịch CPython quản lý RAM bằng bộ đếm tham chiếu (Reference Counting) kết hợp phát hiện vòng lặp Cyclic Garbage Collector.</td>
-                            <td>Bị khóa chặt bởi Global Interpreter Lock (GIL) - chỉ cho phép 1 thread chạy mã máy tại 1 thời điểm $\rightarrow$ đa luồng CPU-bound vô dụng.</td>
-                            <td><strong>MRO (C3 Linearization):</strong> Thuật toán tính toán chính xác thứ tự ưu tiên tìm kiếm hàm trong đa kế thừa, triệt tiêu lỗi cấu trúc kim cương.</td>
+                            <td>Trình thông dịch CPython quản lý RAM bằng bộ đếm tham chiếu (Reference Counting) kết hợp Cyclic Garbage Collector.</td>
+                            <td>Bị giới hạn bởi Global Interpreter Lock (GIL) - chỉ cho phép duy nhất một luồng thực thi mã máy tại một thời điểm.</td>
+                            <td><strong>Dễ phát triển:</strong> Ngôn ngữ hướng kịch bản, cú pháp cực kỳ ngắn gọn, định kiểu động (dynamically typed) dễ tiếp cận cho người mới học.</td>
                         </tr>
                         <tr>
                             <td><strong>C++</strong></td>
-                            <td>Biên dịch trực tiếp ra mã máy native thô. Không có GC, lập trình viên chịu trách nhiệm giải phóng thủ công qua lệnh <code>delete</code>.</td>
-                            <td>Sử dụng đa luồng thô của hệ điều hành vật lý (OS Threads) thông qua thư viện tiêu chuẩn <code>&lt;thread&gt;</code>.</td>
-                            <td><strong>RAII & Move Semantics:</strong> Gắn vòng đời tài nguyên vào đối tượng thô. Dùng <code>std::move</code> ép kiểu rvalue để di dời ô nhớ, tránh deep-copy lãng phí CPU.</td>
+                            <td>Biên dịch trực tiếp ra mã máy native thô. Không có bộ dọn rác GC tự động, lập trình viên phải giải phóng thủ công bằng lệnh <code>delete</code>.</td>
+                            <td>Sử dụng đa luồng của hệ điều hành thông qua thư viện tiêu chuẩn <code>&lt;thread&gt;</code>.</td>
+                            <td><strong>Hiệu năng cực cao:</strong> Cho phép can thiệp sâu vào phần cứng, quản lý địa chỉ con trỏ trực tiếp trên bộ nhớ vật lý.</td>
                         </tr>
                         <tr>
                             <td><strong>Go Language</strong></td>
-                            <td>Biên dịch ra mã máy thô cực nhanh. Có bộ GC dọn dẹp RAM siêu tốc độ cực nhỏ dưới mili-giây.</td>
-                            <td>GMP Scheduler điều phối hàng vạn luồng siêu nhẹ (Goroutines) phân bổ lên một lượng ít luồng hệ điều hành vật lý một cách linh hoạt.</td>
-                            <td><strong>Channels Communication:</strong> Kênh Unbuffered Channel hoạt động đồng bộ chặn luồng gửi cho tới khi có luồng nhận gắp dữ liệu đi để bảo vệ luồng dữ liệu sạch.</td>
+                            <td>Biên dịch trực tiếp ra mã máy native. Tích hợp sẵn bộ thu gom rác GC dọn dẹp RAM siêu tốc độ cực kỳ nhanh.</td>
+                            <td>Sử dụng các luồng siêu nhẹ <strong>Goroutines</strong> và giao tiếp truyền nhận tin cậy qua các <strong>Channels</strong>.</td>
+                            <td><strong>Concurrency-first:</strong> Thiết kế mặc định tối ưu tuyệt vời cho các hệ thống xử lý song song, cú pháp đơn giản, biên dịch cực nhanh.</td>
                         </tr>
                     </tbody>
                 </table>
@@ -516,34 +516,33 @@
 
             <!-- CS Core: DSA & SQL Database -->
             <div class="knowledge-block">
-                <h3>5. CS Foundations: Data Structures, Algorithms & SQL Deep-Dive</h3>
-                <p>Hệ thống hóa sâu sắc cấu trúc dữ liệu, giải thuật đồ thị nâng cao và quản trị cơ sở dữ liệu lớn:</p>
+                <h3>5. CS Foundations: Data Structures, Algorithms & SQL Databases</h3>
+                <p>Hệ thống cấu trúc dữ liệu, giải thuật cơ bản và truy vấn cơ sở dữ liệu quan hệ:</p>
                 
-                <h4>Thuật toán Đồ thị & Sắp xếp</h4>
+                <h4>Thuật toán, Cấu trúc dữ liệu & Sắp xếp</h4>
                 <ul>
                     <li><strong>Độ phức tạp thuật toán Big O:</strong>
-                        <br>- Quick Sort: Trung bình $O(n \log n)$, xấu nhất $O(n^2)$ (mảng đã xếp thứ tự và chọn Pivot ở biên thô). Không ổn định.
-                        <br>- Merge Sort: Luôn luôn đảm bảo $O(n \log n)$ ổn định tuyệt đối trong mọi trường hợp, đổi lại tốn không gian bộ nhớ phụ $O(n)$ để lưu mảng tạm.
-                        <br>- Binary Search: Tìm kiếm trên mảng đã sắp xếp với độ phức tạp $O(\log n)$ bằng cách liên tục chia đôi không gian tìm kiếm.
+                        <br>- Quick Sort: Độ phức tạp trung bình $O(n \log n)$, xấu nhất là $O(n^2)$. Là thuật toán sắp xếp không ổn định (unstable).
+                        <br>- Merge Sort: Luôn bảo đảm $O(n \log n)$ ổn định tuyệt đối trong mọi trường hợp, tốn thêm không gian bộ nhớ phụ là $O(n)$ để lưu mảng tạm.
+                        <br>- Binary Search: Tìm kiếm trên mảng đã sắp xếp với độ phức tạp $O(\log n)$ bằng cách liên tục chia đôi khoảng tìm kiếm.
                     </li>
-                    <li><strong>Đường đi ngắn nhất trên Đồ thị:</strong>
-                        <br>- <strong>Dijkstra:</strong> Sử dụng cơ chế tham lam (Greedy) kết hợp hàng đợi ưu tiên Min-Heap để tìm đường đi ngắn nhất từ một nguồn tới mọi đỉnh khác với chi phí $O(E \log V)$. Điều kiện bắt buộc: Đồ thị không chứa cạnh mang trọng số âm.
-                        <br>- <strong>Bellman-Ford:</strong> Chấp nhận đồ thị có cạnh mang trọng số âm và có khả năng phát hiện ra vòng lặp chu trình âm (Negative Cycle) bằng cách duyệt relaxation toàn bộ cạnh $V-1$ lần. Chi phí chậm hơn: $O(V \cdot E)$.
-                        <br>- <strong>Floyd-Warshall:</strong> Thuật toán quy hoạch động tìm đường ngắn nhất giữa mọi cặp đỉnh $(i, j)$ bất kỳ với độ phức tạp $O(V^3)$ cực kỳ gọn gàng qua 3 vòng lặp lồng nhau.
+                    <li><strong>Duyệt Đồ thị cơ bản:</strong>
+                        <br>- <strong>BFS (Breadth-First Search):</strong> Duyệt theo chiều rộng, sử dụng cấu trúc dữ liệu hàng đợi <strong>Queue (FIFO)</strong>. Phù hợp tìm đường đi ngắn nhất không trọng số.
+                        <br>- <strong>DFS (Depth-First Search):</strong> Duyệt theo chiều sâu, sử dụng cấu trúc dữ liệu ngăn xếp <strong>Stack (LIFO)</strong> hoặc đệ quy. Phù hợp phát hiện chu trình trên đồ thị.
                     </li>
                 </ul>
 
                 <h4>Quản trị Cơ sở Dữ liệu Quan hệ (SQL DBMS)</h4>
                 <ul>
                     <li><strong>Các cấp độ cô lập Transaction (Isolation Levels):</strong>
-                        <br>- <em>Read Uncommitted:</em> Cho phép đọc dữ liệu chưa commit $\rightarrow$ Lỗi **Dirty Read** (đọc dữ liệu ma bị rollback sau đó).
-                        <br>- <em>Read Committed:</em> Chỉ đọc dữ liệu đã commit $\rightarrow$ Tránh được Dirty Read nhưng dính lỗi **Non-repeatable Read** (đọc cùng một dòng ra 2 kết quả khác nhau trong 1 transaction do luồng khác vừa commit sửa đổi).
-                        <br>- <em>Repeatable Read:</em> Khóa dòng đang đọc không cho luồng khác sửa đổi $\rightarrow$ Tránh lỗi trên nhưng dính lỗi **Phantom Read** (đọc lại xuất hiện thêm các dòng mới toanh do luồng khác vừa commit chèn thêm vào).
-                        <br>- <em>Serializable:</em> Cô lập tuyệt đối cao nhất, các transaction xếp hàng tuần tự hóa thô để chạy $\rightarrow$ Hiệu năng tệ nhất nhưng an toàn nhất.
+                        <br>- <em>Read Uncommitted:</em> Cho phép đọc dữ liệu chưa được commit $\rightarrow$ Dẫn đến lỗi **Dirty Read** (đọc dữ liệu ma bị rollback sau đó).
+                        <br>- <em>Read Committed:</em> Chỉ đọc dữ liệu đã commit $\rightarrow$ Tránh được Dirty Read nhưng dính lỗi **Non-repeatable Read** (đọc cùng 1 dòng ra 2 kết quả khác nhau do transaction khác vừa update và commit).
+                        <br>- <em>Repeatable Read:</em> Khóa dòng đang đọc không cho luồng khác update $\rightarrow$ Tránh được 2 lỗi trên nhưng vẫn dính lỗi **Phantom Read** (xuất hiện dòng mới toanh do transaction khác vừa insert).
+                        <br>- <em>Serializable:</em> Cô lập tuyệt đối cao nhất, các transaction xếp hàng chạy tuần tự $\rightarrow$ Chậm nhất nhưng an toàn nhất.
                     </li>
-                    <li><strong>Index Internals (Chỉ mục cơ sở dữ liệu):</strong>
-                        <br>- <em>Clustered Index:</em> Quy định chính xác và sắp xếp vật lý các dòng dữ liệu thực tế trên ổ đĩa cứng. Mỗi bảng chỉ được phép sở hữu duy nhất 1 Clustered Index (mặc định gắn vào Primary Key).
-                        <br>- <em>Non-Clustered Index:</em> Tạo ra một cấu trúc cây B-Tree mục lục riêng nằm tách biệt khỏi bảng dữ liệu. Mỗi nút lá chứa giá trị chỉ mục kèm con trỏ địa chỉ (pointer) dẫn trực tiếp về vị trí vật lý của dòng dữ liệu tương ứng ở bảng gốc.
+                    <li><strong>Index chỉ mục cơ bản:</strong>
+                        <br>- <em>Clustered Index:</em> Sắp xếp vật lý các dòng dữ liệu thực tế trên đĩa cứng của bảng. Mỗi bảng chỉ được sở hữu duy nhất 1 Clustered Index (thường tự gắn vào khóa chính Primary Key).
+                        <br>- <em>Non-Clustered Index:</em> Tạo ra mục lục liên kết riêng biệt nằm ngoài bảng chính để tăng tốc độ truy vấn, nút lá chứa con trỏ dẫn về địa chỉ vật lý của dòng dữ liệu tương ứng.
                     </li>
                 </ul>
             </div>
@@ -722,12 +721,12 @@
                 <h3>4. Chủ Điểm Ngữ Pháp Phải Nhớ (Gerunds, Infinitives, Relative Clauses & Modals)</h3>
                 <p>Tổng hợp các bẫy ngữ pháp dễ sai sót nhất và cách phân biệt khoa học:</p>
                 
-                <h4>Danh Động Từ (Gerunds - V_ing) vs Động Từ Nguyên Mẫu (Infinitives - To_V)</h4>
+                <h4>Danh Động Tư (Gerunds - V_ing) vs Động Từ Nguyên Mẫu (Infinitives - To_V)</h4>
                 <table class="knowledge-table">
                     <thead>
                         <tr>
                             <th>Nhóm Động Từ</th>
-                            <th>Danh Sách Động Từ Tiêu Biểu Bắt Buộc Ghi Nhớ</th>
+                            <th>Danh Sách Động Từ Tiêu Biêu Bắt Buộc Ghi Nhớ</th>
                             <th>Sự Khác Biệt Biến Đổi Ngữ Nghĩa Bản Chất</th>
                         </tr>
                     </thead>
@@ -939,39 +938,340 @@ const quizBank = [
     }
 ];
 
+// Rich curriculum-specific questions targeting requested topics precisely for Java Core, OOP & Concurrency
+const templates0 = [
+    {
+        tag: "Java - Interface vs Abstract",
+        q: "Which of the following is a major functional difference between an Interface and an Abstract Class from Java 8 onwards?",
+        opts: [
+            "A) Abstract classes support multiple inheritance, while interfaces do not.",
+            "B) Interfaces can hold stateful instance fields, whereas abstract classes cannot.",
+            "C) Abstract classes can declare stateful non-final instance fields, whereas interfaces can only have static final constants.",
+            "D) Interfaces cannot have concrete method implementations under any circumstances."
+        ], ans: "C",
+        exp: "Từ Java 8, interface có thể chứa default và static method, nhưng nó vẫn KHÔNG thể chứa biến thực thể (instance fields) mang trạng thái đối tượng như Abstract Class. Interface chỉ có thể khai báo hằng số (public static final)."
+    },
+    {
+        tag: "Java - StringBuilder vs StringBuffer",
+        q: "In a single-threaded Java application, why is StringBuilder generally preferred over StringBuffer for string modification?",
+        opts: [
+            "A) StringBuilder is thread-safe and implements synchronized operations.",
+            "B) StringBuilder is not thread-safe and avoids synchronization overhead, resulting in better performance.",
+            "C) StringBuilder is completely immutable and prevents memory leaks.",
+            "D) StringBuilder stores character nodes directly inside the JVM Stack memory area."
+        ], ans: "B",
+        exp: "StringBuilder không đồng bộ hóa (non-synchronized), nghĩa là không an toàn cho đa luồng nhưng loại bỏ hoàn toàn chi phí kiểm tra khóa (locking overhead). Nhờ đó, nó có tốc độ thực thi nhanh hơn StringBuffer nhiều trong môi trường đơn luồng."
+    },
+    {
+        tag: "Java - Optional API",
+        q: "Which statement is true about the 'Optional' class introduced in Java 8?",
+        opts: [
+            "A) It is a replacement for Checked Exceptions in method signatures.",
+            "B) It is a container object used to represent the presence or absence of a value, helping prevent NullPointerExceptions.",
+            "C) It automatically guarantees that all object field references are non-null.",
+            "D) It can only wrap collection structures such as ArrayList and HashMap."
+        ], ans: "B",
+        exp: "Optional là một container chứa giá trị nullable. Bằng cách sử dụng Optional và các phương thức như 'orElse', 'orElseGet', hoặc 'ifPresent', chúng ta có thể thiết kế API rõ ràng và xử lý giá trị null một cách thanh lịch mà không lo ném ra NullPointerException."
+    },
+    {
+        tag: "Java Core - equals vs ==",
+        q: "What is the difference between equals() and == in Java when comparing reference types?",
+        opts: [
+            "A) == compares memory references; equals() is designed to compare semantic data values (if overridden).",
+            "B) == compares contents; equals() compares memory references.",
+            "C) Both compare memory addresses, but equals() is only used for primitive values.",
+            "D) There is no difference; they are completely identical."
+        ], ans: "A",
+        exp: "Toán tử == so sánh địa chỉ ô nhớ vật lý của hai tham chiếu. Phương thức equals() được thiết kế để so sánh nội dung logic bên trong của hai đối tượng (ví dụ: so sánh từng ký tự trong hai String)."
+    },
+    {
+        tag: "Java Core - static keyword",
+        q: "What is true about a static variable or static method inside a Java class?",
+        opts: [
+            "A) It is associated with an instance of the class and loaded during 'new' allocation.",
+            "B) It belongs to the class itself, is shared among all instances, and resides in the Metaspace/Class area.",
+            "C) It can directly invoke non-static fields without an object instance.",
+            "D) It is automatically deleted by the Garbage Collector as soon as a method scope exits."
+        ], ans: "B",
+        exp: "Thành phần static thuộc về chính Class chứ không thuộc về đối tượng. Nó được nạp một lần duy nhất khi class được JVM load và được lưu trữ ở vùng nhớ chung Metaspace/Class Area."
+    },
+    {
+        tag: "Java - Optional Methods",
+        q: "Consider the following code snippet: Optional<String> name = Optional.ofNullable(null); What is the value of name.orElse(\"Default\")?",
+        opts: ["A) Throws a NullPointerException", "B) \"Default\"", "C) An empty Optional instance", "D) null"], ans: "B",
+        exp: "Optional.ofNullable(null) tạo ra một Optional rỗng. Khi gọi phương thức 'orElse(\"Default\")', do giá trị bên trong rỗng nên nó sẽ lập tức trả về giá trị thay thế mặc định được truyền vào là \"Default\"."
+    },
+    {
+        tag: "Java - equals & hashCode contract",
+        q: "If two Java objects are considered equal according to the equals(Object) method, what is the contract regarding their hashCode() values?",
+        opts: [
+            "A) Their hashCodes must be completely different to prevent collision.",
+            "B) Their hashCodes must return the exact same integer value.",
+            "C) There is no structural relationship between equals() and hashCode().",
+            "D) Their hashCodes must always return a negative prime number."
+        ], ans: "B",
+        exp: "Theo hợp đồng (contract) của Java, nếu hai đối tượng bằng nhau (equals() == true), thì khi gọi hashCode() trên cả hai đối tượng này bắt buộc phải trả về cùng một giá trị số nguyên giống hệt nhau."
+    }
+];
+
+// Rich modern languages curriculum focusing heavily on Javascript, Promises, Event Loop, React virtual DOM, and React Hooks
+const templates1 = [
+    {
+        tag: "JavaScript - var / let / const",
+        q: "Which of the following statements correctly describes the scoping behavior of 'var' versus 'let' and 'const' in JavaScript?",
+        opts: [
+            "A) 'var' is block-scoped, whereas 'let' and 'const' are function-scoped.",
+            "B) 'var' is function-scoped and supports hoisting, whereas 'let' and 'const' are block-scoped and exist in the Temporal Dead Zone until declared.",
+            "C) 'let' supports hoisting to the global scope while 'var' is strictly confined to block braces.",
+            "D) There are no scoping differences; they only differ in value re-assignment rules."
+        ], ans: "B",
+        exp: "Biến khai báo bằng 'var' có phạm vi hàm (function scope) và sẽ bị hoists lên đầu scope. Trong khi đó, 'let' và 'const' có phạm vi khối lệnh (block scope - bao quanh bởi `{}`) và không thể truy cập trước khi khai báo (Temporal Dead Zone)."
+    },
+    {
+        tag: "JavaScript - Closures",
+        q: "What is a Closure in JavaScript?",
+        opts: [
+            "A) A built-in browser window termination function.",
+            "B) A function that retains access to its lexical scope environment even when executed outside that scope.",
+            "C) A method used to seal objects and prevent adding new properties.",
+            "D) A strict compiling phase that blocks memory garbage collection."
+        ], ans: "B",
+        exp: "Closure (bao đóng) là một hàm có khả năng 'nhớ' và truy cập được vào các biến nằm trong phạm vi Lexical Scope (phạm vi khai báo) ban đầu của nó, ngay cả khi hàm đó đang được gọi thực thi ở một phạm vi khác."
+    },
+    {
+        tag: "JavaScript - Promises",
+        q: "What does a Promise object in JavaScript represent?",
+        opts: [
+            "A) A synchronous execution blocker that waits for file downloads.",
+            "B) An asynchronous operation that may eventually complete with a success value or a failure reason.",
+            "C) A thread scheduler that delegates heavy tasks to physical CPU cores.",
+            "D) A strict database transaction manager that rollback errors."
+        ], ans: "B",
+        exp: "Promise là đại diện cho một tác vụ bất đồng bộ chưa hoàn thành tại thời điểm hiện tại nhưng hứa hẹn sẽ trả về một kết quả thành công (fulfilled) hoặc lỗi thất bại (rejected) trong tương lai."
+    },
+    {
+        tag: "React - Props vs State",
+        q: "What is the primary difference between 'props' and 'state' in a React component architecture?",
+        opts: [
+            "A) State is external data passed down by parents; Props are local component variables.",
+            "B) Props are read-only configuration objects passed down from a parent component; State is an internal, mutable data structure managed by the component itself.",
+            "C) Props can trigger re-renders only in functional components; State belongs to class templates only.",
+            "D) Both represent immutable data structures that cannot be modified inside or outside."
+        ], ans: "B",
+        exp: "Props (Properties) được truyền từ component cha xuống component con và có tính chất bất biến (read-only) đối với component nhận. State là dữ liệu nội bộ của chính component đó, có thể thay đổi và quản lý qua các hàm hook như useState."
+    },
+    {
+        tag: "React - useEffect Cleanup",
+        q: "How does a developer specify a cleanup phase (like clearing timers or unsubscribing from APIs) inside a React useEffect Hook?",
+        opts: [
+            "A) By calling 'useEffect.cleanup()' inside the component return statement.",
+            "B) By returning a callback function from the active useEffect hook callback.",
+            "C) By adding 'cleanup' to the dependencies array argument of the hook.",
+            "D) React functional components do not support subscription cleanups."
+        ], ans: "B",
+        exp: "Để thiết lập dọn dẹp (cleanup) tránh rò rỉ bộ nhớ, ta chỉ cần trả về (return) một hàm callback trong thân của useEffect. Hàm này sẽ được React tự động kích hoạt trước khi component unmount hoặc trước khi chạy lại hiệu ứng tiếp theo."
+    },
+    {
+        tag: "React - Virtual DOM & Reconciliation",
+        q: "How does the Virtual DOM improve UI rendering efficiency in React?",
+        opts: [
+            "A) It directly compiles JavaScript components into native browser binary code.",
+            "B) It computes visual changes in a lightweight memory representation, and applies only the minimum necessary diff patches into the real browser DOM.",
+            "C) It saves webpage images automatically into cloud CDN locations.",
+            "D) It executes parallel threads in the background to bypass browser Single-Thread limitations."
+        ], ans: "B",
+        exp: "React sử dụng Virtual DOM (cây DOM ảo gọn nhẹ trong bộ nhớ). Khi có cập nhật state, nó tính toán độ lệch (diffing) giữa cây mới và cũ rồi đồng bộ tối thiểu (reconciliation) các thay đổi thực tế vào Real DOM của trình duyệt, giúp UI mượt mà."
+    }
+];
+
+// CS core focused heavily on Database queries, GROUP BY, HAVING, Trees, Queue, Cloud service models (SaaS, PaaS, IaaS)
+const templates2 = [
+    {
+        tag: "SQL - GROUP BY & HAVING",
+        q: "Why is the HAVING clause used instead of the WHERE clause in relational SQL queries?",
+        opts: [
+            "A) HAVING is faster than WHERE because it is processed before data is read.",
+            "B) WHERE is used to filter individual rows before grouping, while HAVING is used to filter grouped rows based on aggregate function results.",
+            "C) HAVING is used for nested subqueries only, while WHERE is used for table joins.",
+            "D) There is no operational difference; they are interchangeable alias keywords."
+        ], ans: "B",
+        exp: "Mệnh đề WHERE lọc dữ liệu của từng dòng riêng lẻ TRƯỚC KHI tiến hành gom nhóm (GROUP BY). Mệnh đề HAVING dùng để lọc các nhóm dữ liệu SAU KHI đã gom nhóm dựa trên kết quả của các hàm tổng hợp (Aggregate Functions)."
+    },
+    {
+        tag: "SQL - Aggregate Functions",
+        q: "Given a database table 'employees(id, department_id, salary)', which query correctly retrieves departments where the average salary exceeds 50,000?",
+        opts: [
+            "A) SELECT department_id FROM employees WHERE AVG(salary) > 50000 GROUP BY department_id;",
+            "B) SELECT department_id FROM employees GROUP BY department_id HAVING AVG(salary) > 50000;",
+            "C) SELECT department_id FROM employees GROUP BY department_id WHERE salary > 50000;",
+            "D) SELECT department_id, AVG(salary) FROM employees WHERE salary > 50000;"
+        ], ans: "B",
+        exp: "Ta gom nhóm nhân viên theo phòng ban 'GROUP BY department_id', sau đó sử dụng mệnh đề lọc nhóm 'HAVING AVG(salary) > 50000' vì AVG(salary) là một hàm tổng hợp (Aggregate Function)."
+    },
+    {
+        tag: "DSA - BFS vs DFS Algorithms",
+        q: "Which data structure is primarily utilized to execute a Breadth-First Search (BFS) traversal on a binary tree or graph?",
+        opts: [
+            "A) Stack (Last-In, First-Out)",
+            "B) Queue (First-In, First-Out)",
+            "C) Hash Table with linear probing",
+            "D) Sorted Binary Search Tree"
+        ], ans: "B",
+        exp: "Thuật toán BFS duyệt đồ thị theo từng lớp/chiều rộng từ gần đến xa. Do đó, nó sử dụng cấu trúc dữ liệu Hàng đợi (Queue - FIFO) để lưu vết các nút chờ xử lý theo đúng thứ tự phát hiện."
+    },
+    {
+        tag: "DSA - Tree Traversals",
+        q: "Which binary tree traversal method visits nodes in the following order: Left Child $\rightarrow$ Root $\rightarrow$ Right Child?",
+        opts: [
+            "A) Pre-order traversal",
+            "B) In-order traversal",
+            "C) Post-order traversal",
+            "D) Level-order traversal"
+        ], ans: "B",
+        exp: "Duyệt trung thứ tự (In-order traversal) duyệt cây theo quy trình: duyệt toàn bộ cây con bên trái (Left), thăm nút gốc (Root), rồi duyệt cây con bên phải (Right). Đối với cây nhị phân tìm kiếm BST, phép duyệt này trả về danh sách có thứ tự tăng dần."
+    },
+    {
+        tag: "Cloud - PaaS vs SaaS",
+        q: "Which statement perfectly contrasts Platform as a Service (PaaS) and Software as a Service (SaaS)?",
+        opts: [
+            "A) PaaS provides physical bare-metal hardware; SaaS provides virtual machines.",
+            "B) PaaS provides a ready platform environment for developers to deploy and run code; SaaS provides complete, fully-functional software applications accessed over the web.",
+            "C) PaaS is managed entirely on-premises; SaaS is strictly a hybrid cloud gateway.",
+            "D) There is no difference; both require developers to manage operating system updates."
+        ], ans: "B",
+        exp: "PaaS (như AWS Elastic Beanstalk, Heroku) cung cấp môi trường chạy ứng dụng để lập trình viên tự triển khai mã nguồn. SaaS (như Google Workspace, Microsoft 365, Salesforce) cung cấp phần mềm hoàn thiện cho người dùng sử dụng trực tiếp qua web."
+    },
+    {
+        tag: "Cloud - Public Cloud Storage",
+        q: "In cloud architectures, which AWS service represents highly scalable, reliable Object Storage used to store static assets like user uploads?",
+        opts: [
+            "A) AWS EC2 (Elastic Compute Cloud)",
+            "B) AWS RDS (Relational Database Service)",
+            "C) AWS S3 (Simple Storage Service)",
+            "D) AWS Lambda Serverless Functions"
+        ], ans: "C",
+        exp: "AWS S3 (Simple Storage Service) là dịch vụ lưu trữ đối tượng (Object Storage) nổi tiếng toàn cầu, cung cấp không gian chứa tệp tin tĩnh (ảnh, video, logs) không giới hạn dung lượng với độ bền bỉ cực cao."
+    },
+    {
+        tag: "DSA - Queue Operations",
+        q: "What is the computational complexity of the 'enqueue' (insert) and 'dequeue' (remove) operations in a standard circular array queue?",
+        opts: ["A) O(1) for both", "B) O(log n) for both", "C) O(n) for both", "D) O(1) for enqueue and O(n) for dequeue"], ans: "A",
+        exp: "Cơ chế hàng đợi chuẩn (Queue) chèn phần tử ở cuối (rear) và xóa phần tử ở đầu (front). Cả hai thao tác này đều tốn chi phí thời gian không đổi $O(1)$ vì chỉ cần dịch chuyển các con trỏ quản lý chỉ mục."
+    },
+    {
+        tag: "SQL - Indexes & Performance",
+        q: "What is a major trade-off of adding multiple indexes to a database table?",
+        opts: [
+            "A) It speeds up SELECT queries but slows down INSERT, UPDATE, and DELETE operations due to index rebuilding overhead.",
+            "B) It slows down SELECT queries while dramatically speeding up write operations.",
+            "C) It makes the database vulnerable to SQL injection attacks.",
+            "D) It doubles the memory space required by the JVM heap stack."
+        ], ans: "A",
+        exp: "Chỉ mục (Index) hoạt động như mục lục sách, giúp tìm kiếm (SELECT) dữ liệu cực nhanh. Tuy nhiên, mỗi khi thay đổi dữ liệu (INSERT, UPDATE, DELETE), DBMS phải mất công cập nhật và sắp xếp lại cây chỉ mục, làm chậm các thao tác ghi."
+    }
+];
+
+// High-yield, extremely realistic, B1/B2 workplace English proficiency questions
+// Removed rare, obscure grammar to match practical evaluation standards
+const templates3 = [
+    {
+        tag: "English - Workplace Communication",
+        q: "Complete the email sentence with the most polite and professional expression:\n\n\"Please find attached the updated project scope. I ________ hearing your feedback at your earliest convenience.\"",
+        opts: [
+            "A) look forward to",
+            "B) am looking forward",
+            "C) would look forward for",
+            "D) look forward of"
+        ], ans: "A",
+        exp: "Cấu trúc chuẩn trong thư tín thương mại quốc tế: 'look forward to + V_ing/Noun' (Tôi rất mong nhận được phản hồi/gặp lại bạn). 'look forward to' được dùng phổ biến để thể hiện sự lịch sự."
+    },
+    {
+        tag: "English - Relative Clause",
+        q: "Complete the workspace sentence:\n\n\"Our team is looking for a cloud security specialist ________ primary duty will be migrating local database systems to Microsoft Azure.\"",
+        opts: ["A) who", "B) whose", "C) which", "D) whom"], ans: "B",
+        exp: "'whose' chỉ sự sở hữu (whose primary duty - người có nhiệm vụ chính là...). Phù hợp đứng giữa danh từ chỉ người 'specialist' và danh từ chỉ vật 'primary duty'."
+    },
+    {
+        tag: "English - Workplace Request",
+        q: "Complete the meeting request politely:\n\n\"________ you mind checking the API documentation before we schedule the client demo tomorrow morning?\"",
+        opts: ["A) Could", "B) Would", "C) Will", "D) Should"], ans: "B",
+        exp: "Cấu trúc lịch sự đề nghị ai đó làm gì: 'Would you mind + V_ing...?' (Bạn có phiền lòng kiểm tra lại tài liệu...?). Cấu trúc này rất thông dụng trong văn hóa công sở Agile."
+    },
+    {
+        tag: "English - Contrast Conjunctions",
+        q: "Choose the correct connector to complete the technical sentence:\n\n\"________ the database server was optimized last week, we are still experiencing minor query latency under peak load.\"",
+        opts: [
+            "A) Despite",
+            "B) In spite of",
+            "C) Although",
+            "D) However"
+        ], ans: "C",
+        exp: "'Although' đi kèm với một mệnh đề chứa chủ ngữ và động từ (Although + S + V). 'Despite' và 'In spite of' đi kèm với cụm danh từ hoặc V-ing. 'However' thường đứng đầu câu sau dấu chấm."
+    },
+    {
+        tag: "English - Active / Passive",
+        q: "Complete the release notes sentence:\n\n\"The critical security patches ________ by our DevOps team last night, resolving the login vulnerability.\"",
+        opts: [
+            "A) were successfully deployed",
+            "B) was successfully deployed",
+            "C) successfully deployed",
+            "D) have successfully deployed"
+        ], ans: "A",
+        exp: "Chủ ngữ 'The critical security patches' ở dạng số nhiều. Trạng từ thời gian 'last night' chỉ thời điểm quá khứ xác định. Do đó ta dùng bị động quá khứ đơn số nhiều: 'were' + V_3/ed."
+    },
+    {
+        tag: "English - Conditional Type 2",
+        q: "Complete the sentence:\n\n\"If we ________ a backup server in place, we would not lose any transaction data during unexpected power failures.\"",
+        opts: ["A) had", "B) have", "C) would have", "D) had had"], ans: "A",
+        exp: "Đây là câu điều kiện loại 2 giả định tình huống không có thật ở hiện tại. Mệnh đề IF chia quá khứ đơn (had), mệnh đề chính dùng 'would not + V_inf'."
+    }
+];
+
 // Structural loop to populate exact threshold (45 items per section, 100 for English)
 for(let s=0; s<=3; s++) {
     let currentCount = quizBank.filter(x => x.section === s).length;
     let target = s === 3 ? 100 : 45;
     let padId = 1;
     while(currentCount < target) {
-        if (s !== 3) {
+        if (s === 0) {
+            let tObj = templates0[(padId - 1) % templates0.length];
             quizBank.push({
-                section: s,
-                tag: `Technical Core Evaluation Matrix`,
-                q: `Select the option that represents professional computer software optimization best practices matching [Domain ${s+1} - Node ${padId}]:`,
-                opts: [
-                    "A) Utilizing dynamic anti-pattern layouts to bypass encapsulation constraints.",
-                    "B) Enforcing loose-coupling modular isolation, proactive resource disposals, and evaluating algorithm complexities.",
-                    "C) Silencing internal runtime frame tracing logs to accelerate raw computation speed threads.",
-                    "D) Storing unstructured binary cache structures inside unsafe non-synchronized memory blocks."
-                ],
-                ans: "B",
-                exp: "Mã nguồn tối ưu chuẩn công nghiệp luôn đòi hỏi thiết kế kiến trúc phân tách độc lập (loose-coupling), dọn dẹp giải phóng tài nguyên bộ nhớ nghiêm ngặt tránh rò rỉ RAM và tính toán chu đáo độ phức tạp Big O."
+                section: 0,
+                tag: tObj.tag,
+                q: `${tObj.q} (Study Node-${padId})`,
+                opts: tObj.opts,
+                ans: tObj.ans,
+                exp: tObj.exp
+            });
+        } else if (s === 1) {
+            let tObj = templates1[(padId - 1) % templates1.length];
+            quizBank.push({
+                section: 1,
+                tag: tObj.tag,
+                q: `${tObj.q} (Study Node-${padId})`,
+                opts: tObj.opts,
+                ans: tObj.ans,
+                exp: tObj.exp
+            });
+        } else if (s === 2) {
+            let tObj = templates2[(padId - 1) % templates2.length];
+            quizBank.push({
+                section: 2,
+                tag: tObj.tag,
+                q: `${tObj.q} (Study Node-${padId})`,
+                opts: tObj.opts,
+                ans: tObj.ans,
+                exp: tObj.exp
             });
         } else {
+            let tObj = templates3[(padId - 1) % templates3.length];
             quizBank.push({
                 section: 3,
-                tag: `English Proficiency Practice - Q${padId + 3}`,
-                q: `Identify the sentence that perfectly demonstrates appropriate professional tone and correct grammatical syntax for workspace interaction at B1/B2 level:`,
-                opts: [
-                    "A) We zero help you because contract missing this field data now.",
-                    "B) Could you please forward me the updated project timeline at your earliest convenience?",
-                    "C) Why you always pushing tasks too fast without testing anything?",
-                    "D) I deleting the entire production database code to clear up error lists."
-                ],
-                ans: "B",
-                exp: "Câu B sử dụng cấu trúc văn phong lịch sự trang trọng 'Could you please... at your earliest convenience' cực kỳ chuẩn mực trong giao tiếp viết thư tín điện tử văn phòng quốc tế."
+                tag: tObj.tag,
+                q: `${tObj.q} (Ref-${padId})`,
+                opts: tObj.opts,
+                ans: tObj.ans,
+                exp: tObj.exp
             });
         }
         padId++;
